@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AOI Editor</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar left-panel">
+      <div class="panel-header">
+        <h2>Images</h2>
+        <button id="refreshImagesBtn" type="button">Refresh</button>
+      </div>
+      <div id="imageList" class="image-list"></div>
+      <p class="hint">Put your files inside the local <code>images/</code> folder, then refresh.</p>
+    </aside>
+
+    <main class="main-panel">
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <label for="aoiNameInput">Next AOI name</label>
+          <input id="aoiNameInput" type="text" placeholder="e.g. road_sign" />
+        </div>
+        <div class="toolbar-group status-wrap">
+          <span id="currentImageLabel">No image selected</span>
+          <span id="saveStatus">Idle</span>
+        </div>
+      </div>
+
+      <div class="instructions">
+        Draw a rectangle by dragging on empty space. Drag an existing rectangle to move it. Coordinates are stored in original image pixels from the top-left corner.
+      </div>
+
+      <div id="viewerOuter" class="viewer-outer">
+        <div id="emptyState" class="empty-state">Add images to the <code>images/</code> folder to get started.</div>
+        <div id="viewerStage" class="viewer-stage hidden">
+          <img id="mainImage" alt="Selected image" draggable="false" />
+          <div id="overlay" class="overlay"></div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="sidebar right-panel">
+      <div class="panel-header">
+        <h2>AOIs</h2>
+      </div>
+      <div id="aoiList" class="aoi-list"></div>
+      <p class="hint">Saved to <code>aois.csv</code> in real time.</p>
+    </aside>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

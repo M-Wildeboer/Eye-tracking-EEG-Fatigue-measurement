@@ -1,0 +1,261 @@
+﻿Stimulus,AOI,x,y,w,h
+waldo_01.png,Waldo,791,960,97,97
+waldo_01.png,Salient_boat,1398,80,480,246
+waldo_01.png,Salient_boat,478,129,293,363
+waldo_01.png,Striped_fabric wall,626,1044,286,156
+waldo_01.png,Striped_fabric wall 2,3,1056,151,170
+waldo_01.png,Striped_guy,419,1052,109,192
+waldo_01.png,Striped_parasol,286,866,205,130
+waldo_01.png,Striped_parasol,1420,1114,278,179
+waldo_01.png,Striped_tent,1124,817,214,284
+waldo_02.png,Waldo,1238,74,80,49
+waldo_02.png,Salient_boat,1015,640,351,257
+waldo_02.png,Salient_bucket,717,578,288,316
+waldo_02.png,Salient_sinking boat,230,720,269,168
+waldo_02.png,Salient_tapijt,1197,219,274,286
+waldo_02.png,Striped_ball,416,635,113,81
+waldo_02.png,Striped_parasol,1100,401,140,106
+waldo_02.png,Striped_tent,358,61,272,221
+waldo_02.png,Striped_tent 2,984,106,152,237
+waldo_03.png,Waldo,265,423,80,50
+waldo_03.png,Salient_koets 1,1356,649,218,210
+waldo_03.png,Salient_koets 2,949,740,215,232
+waldo_03.png,Salient_koets 3,443,762,210,212
+waldo_03.png,Salient_koets 4,47,499,313,215
+waldo_03.png,Salient_koets 5,1144,24,198,134
+waldo_03.png,Salient_text,57,52,452,313
+waldo_03.png,Salient_train,1291,171,285,244
+waldo_04.png,Waldo,110,484,73,47
+waldo_04.png,Salient_dinner area,3,335,463,585
+waldo_04.png,Striped_guy,742,393,57,118
+waldo_04.png,Striped_lady 1,996,34,55,105
+waldo_04.png,Striped_lady 2,1022,334,84,110
+waldo_05.png,Waldo,190,1876,85,117
+waldo_05.png,Salient_book,114,12,1080,624
+waldo_05.png,Salient_kasteel,255,646,1446,946
+waldo_05.png,Salient_katapult 1,384,1743,747,525
+waldo_05.png,Salient_katapult 2,1145,1624,547,638
+waldo_06.png,Waldo,828,544,64,88
+waldo_06.png,Salient_tafel 1,0,807,415,473
+waldo_06.png,Salient_tafel 2,428,603,423,276
+waldo_06.png,Salient_tafel 3,614,923,509,362
+waldo_06.png,Salient_tafel 4,452,0,475,285
+waldo_06.png,Salient_tafel 5,136,1487,588,263
+waldo_06.png,Salient_tafel 6,13,214,294,270
+waldo_07.png,Waldo,1112,295,140,88
+waldo_07.png,Salient_muur 1,947,4,262,218
+waldo_07.png,Salient_muur 2,1841,4,559,366
+waldo_07.png,Salient_muur 3,2313,894,447,347
+waldo_07.png,Salient_muur 4,1610,1284,543,363
+waldo_07.png,Salient_muur 5,677,915,581,412
+waldo_07.png,Salient_postcard,64,94,744,464
+waldo_07.png,Salient_tafel 1,942,337,406,297
+waldo_07.png,Salient_tafel 2,157,1360,477,303
+waldo_07.png,Salient_tafel 3,1760,654,496,371
+waldo_08.png,Waldo,219,730,65,48
+waldo_08.png,Salient_paintings 1,12,3,609,277
+waldo_08.png,Salient_paintings 2,757,1,533,275
+waldo_08.png,Salient_paintings 3,4,402,436,184
+waldo_08.png,Salient_paintings 4,561,412,729,186
+waldo_09.png,Waldo,205,298,73,47
+waldo_09.png,Salient_big boat,380,5,1071,337
+waldo_09.png,Salient_boat 1,23,10,255,195
+waldo_09.png,Salient_boat 2,135,259,314,255
+waldo_09.png,Salient_boat 3 and 4,11,525,404,220
+waldo_09.png,Salient_boat 5,445,582,189,263
+waldo_09.png,Salient_boat 6,689,664,359,209
+waldo_09.png,Salient_boat 7,519,358,303,199
+waldo_09.png,Salient_boat 8,1073,591,241,191
+waldo_09.png,Salient_boat 9 and 10,1017,343,415,185
+waldo_09.png,Salient_glass bottle,34,758,290,118
+waldo_10.png,Waldo,1077,350,73,47
+waldo_10.png,Salient_bridge and dino,462,499,408,219
+waldo_10.png,Salient_cino 3,1275,578,180,160
+waldo_10.png,Salient_dino 1,389,52,267,269
+waldo_10.png,Salient_dino 2,139,271,303,157
+waldo_10.png,Salient_dino 4,48,743,193,176
+waldo_10.png,Salient_wagen,964,367,210,229
+waldo_11.png,Waldo,1109,821,73,46
+waldo_11.png,Salient_dino,141,719,278,148
+waldo_11.png,Salient_frame with text,194,189,799,505
+waldo_11.png,Salient_hat-house,1093,174,104,279
+waldo_11.png,Salient_mammoet,739,697,366,126
+waldo_11.png,Salient_train,1105,483,249,185
+waldo_11.png,Salient_ufo,1120,56,268,118
+waldo_11.png,Striped_roof,993,180,75,64
+waldo_11.png,Striped_tent 1,425,827,172,99
+waldo_11.png,Striped_tent 2,877,864,158,62
+waldo_12.jpg,Waldo,1179,84,73,47
+waldo_12.jpg,Salient_blue background,337,351,243,329
+waldo_12.jpg,Salient_red floor,3,692,578,229
+waldo_12.jpg,Salient_stone building,9,228,311,458
+waldo_12.jpg,Salient_yellow-pink room,586,222,878,566
+waldo_13.png,Waldo,765,311,73,47
+waldo_13.png,Salient_number ball,582,106,438,253
+waldo_13.png,Salient_number ship 1,457,371,942,292
+waldo_13.png,Salient_number ship 2,166,4,392,190
+waldo_13.png,Salient_number ship 3,82,217,331,314
+waldo_13.png,Salient_number ship 4,1030,4,312,217
+waldo_14.png,Waldo,1687,400,102,73
+waldo_14.png,Salient_blue tower,507,357,503,689
+waldo_14.png,Salient_light blue tower,1744,74,300,695
+waldo_14.png,Salient_red tower,1026,348,517,695
+waldo_14.png,Salient_yellow-red people,102,4,954,338
+waldo_15.png,Waldo,290,139,73,48
+waldo_15.png,Salient_blue machine,979,58,380,431
+waldo_15.png,Salient_purple stair thing,729,430,271,428
+waldo_15.png,Salient_red pipe,13,14,706,353
+waldo_15.png,Salient_red pipes,296,515,387,255
+waldo_16.png,Waldo,929,224,74,47
+waldo_16.png,Salient_building,931,1,321,231
+waldo_16.png,Salient_building with dino,310,4,376,287
+waldo_16.png,Salient_dino 1,75,302,213,244
+waldo_16.png,Salient_dino 2,550,294,242,327
+waldo_16.png,Salient_dino 3,984,672,360,231
+waldo_16.png,Salient_dino 4 + blue pipes,937,245,253,255
+waldo_16.png,Salient_dino 5,80,707,267,173
+waldo_17.png,Waldo,62,516,64,47
+waldo_17.png,Salient_boat frame,142,483,1040,336
+waldo_17.png,Salient_yellow book,724,52,560,231
+waldo_18.png,Waldo,1195,284,75,47
+waldo_18.png,Salient_apple basket,1228,139,235,166
+waldo_18.png,Salient_banana,365,286,508,180
+waldo_18.png,Salient_open cut orange,612,575,283,155
+waldo_19.png,Waldo,1448,267,102,64
+waldo_19.png,Salient_dino 1 and 2,1306,685,679,382
+waldo_19.png,Salient_middle dino 3,749,450,415,509
+waldo_19.png,Striped_dino 1,1370,330,382,352
+waldo_19.png,Striped_dino 2,336,424,406,321
+waldo_20.png,Waldo,354,316,73,47
+waldo_20.png,Salient_castle,500,323,835,467
+waldo_20.png,Salient_flag,444,109,155,135
+waldo_20.png,Salient_house,237,361,256,346
+waldo_20.png,Striped_tent 1,711,3,229,225
+waldo_20.png,Striped_tent 2,1156,8,277,143
+waldo_20.png,Striped_tent 3,162,129,209,211
+waldo_20.png,Striped_tent 4,464,262,195,126
+waldo_20.png,Striped_tent 5,24,477,200,260
+waldo_21.png,Waldo,59,532,73,47
+waldo_21.png,Salient_grass 1,39,426,409,275
+waldo_21.png,Salient_grass 2,552,623,385,293
+waldo_21.png,Salient_grass 3,1277,520,175,276
+waldo_21.png,Salient_grass 4,1015,22,372,295
+waldo_21.png,Salient_pond,34,14,693,401
+waldo_22.png,Waldo,1222,767,73,47
+waldo_22.png,Salient_livery stable,415,230,394,208
+waldo_22.png,Salient_one more saloon,1023,620,210,203
+waldo_22.png,Salient_pioneer saloon,154,669,477,259
+waldo_22.png,Salient_poster,866,9,416,320
+waldo_22.png,Salient_salo blue,1300,71,160,119
+waldo_22.png,Salient_salo blue,1203,424,252,84
+waldo_22.png,Salient_saloon banner red,16,304,347,113
+waldo_22.png,Salient_saloon red,81,11,374,120
+waldo_23.png,Waldo,636,165,73,47
+waldo_23.png,Salient_zwart rots 1,370,1,256,261
+waldo_23.png,Salient_zwart rots 2,1023,482,423,341
+waldo_23.png,Salient_zwart rots 3,375,358,406,240
+waldo_23.png,Salient_zwart rots 4,8,204,212,252
+waldo_23.png,Salient_zwart rots en vuur,638,1,512,285
+waldo_24.png,Waldo,1360,447,102,67
+waldo_24.png,Salient_castle,1130,869,918,462
+waldo_24.png,Salient_katapult,1575,295,370,346
+waldo_24.png,Salient_tower,751,514,362,817
+waldo_24.png,Salient_wood,587,487,162,142
+waldo_24.png,Salient_wooden house 1,1242,516,314,338
+waldo_24.png,Salient_wooden house 2,104,1048,449,295
+waldo_24.png,Striped_tent 1,463,5,148,225
+waldo_24.png,Striped_tent 2,618,50,181,290
+waldo_24.png,Striped_tent 3,316,261,210,290
+waldo_25.png,Waldo,453,276,73,47
+waldo_25.png,Salient_big fish,795,626,353,301
+waldo_25.png,Salient_rots 1,345,64,356,259
+waldo_25.png,Salient_rots 2,1041,77,282,271
+waldo_25.png,Salient_rots 3,132,86,156,135
+waldo_25.png,Salient_shark,160,627,322,109
+waldo_25.png,Salient_sidder alen,1049,560,411,115
+waldo_25.png,Striped_boat 1,716,273,166,43
+waldo_25.png,Striped_boat 2,424,344,209,65
+waldo_25.png,Striped_boat 3,192,262,155,78
+waldo_25.png,Striped_boat 4,54,355,151,63
+waldo_25.png,Striped_boat 5,32,493,203,71
+waldo_25.png,Striped_boat 6,267,473,198,78
+waldo_25.png,Striped_boat 7,569,523,166,67
+waldo_25.png,Striped_boat 8,798,487,290,71
+waldo_25.png,Striped_boat 9,1200,501,192,57
+waldo_25.png,Striped_sail,735,138,155,123
+waldo_26.png,Waldo,1172,336,71,46
+waldo_26.png,Salient_blue tower,16,207,287,647
+waldo_26.png,Salient_green tower,898,61,167,300
+waldo_26.png,Salient_red tower,598,79,166,237
+waldo_26.png,Salient_red wall,741,408,401,197
+waldo_26.png,Salient_red-blue tower,1124,84,126,260
+waldo_27.png,Waldo,162,622,70,44
+waldo_27.png,Salient_table 1,49,6,508,230
+waldo_27.png,Salient_table 2 P1,658,182,363,180
+waldo_27.png,Salient_table 2 P2,793,22,407,156
+waldo_27.png,Salient_table 3,187,349,286,170
+waldo_27.png,Salient_table 4,580,664,382,222
+waldo_27.png,Salient_table 5,4,657,251,201
+waldo_27.png,Salient_table 6,621,400,438,251
+waldo_28.png,Waldo,1263,81,73,47
+waldo_28.png,Salient_block,0,714,135,207
+waldo_28.png,Salient_piramid,256,566,1194,362
+waldo_28.png,Salient_totem,82,4,254,478
+waldo_29.png,Waldo,677,518,102,63
+waldo_29.png,Salient_horses,1103,261,580,241
+waldo_30.png,Waldo,645,26,73,47
+waldo_30.png,Salient_circle,988,481,239,144
+waldo_30.png,Striped_battle bak,942,661,417,221
+waldo_30.png,Striped_tent,4,502,825,427
+waldo_30.png,Striped_wagon roof,551,58,447,80
+waldo_30.png,Striped_water slide,1046,98,408,352
+waldo_31.png,Waldo,11,664,73,47
+waldo_31.png,Salient_frame 1,0,105,179,189
+waldo_31.png,Salient_frame 2,2,412,171,193
+waldo_31.png,Salient_frame 3,472,65,183,336
+waldo_31.png,Salient_frame 4,392,436,190,171
+waldo_31.png,Salient_frame 5,668,451,301,302
+waldo_31.png,Salient_frame 6,947,157,215,186
+waldo_31.png,Salient_frame 7,1166,91,194,191
+waldo_32.png,Waldo,760,433,73,47
+waldo_32.png,Salient_animal,7,410,127,135
+waldo_32.png,Salient_animals,293,5,354,255
+waldo_32.png,Salient_tent 1,1146,0,291,294
+waldo_32.png,Salient_tent 2,859,239,288,263
+waldo_32.png,Salient_tent 3,653,522,337,296
+waldo_32.png,Salient_tent 4,308,834,356,98
+waldo_32.png,Salient_tent 5,1052,591,252,215
+waldo_32.png,Salient_tent 6,1328,431,125,365
+waldo_33.png,Waldo,645,610,73,47
+waldo_33.png,Salient_booth,850,429,243,148
+waldo_33.png,Salient_red bakken en truck,814,204,643,221
+waldo_33.png,Salient_scenery,17,828,1424,102
+waldo_33.png,Salient_train,862,21,579,158
+waldo_33.png,Salient_wagon,0,16,146,141
+waldo_34.png,Waldo,1053,512,73,47
+waldo_34.png,Salient_boat,1059,723,396,211
+waldo_34.png,Salient_boat 2,1036,204,308,173
+waldo_34.png,Salient_boat 3,167,4,283,87
+waldo_34.png,Salient_log,366,168,393,141
+waldo_34.png,Salient_pool,105,487,683,260
+waldo_34.png,Salient_shark and boat,836,48,241,137
+waldo_35.png,Waldo,1115,325,73,47
+waldo_35.png,Salient_atage 1,859,4,588,420
+waldo_35.png,Salient_stage 2,549,501,821,336
+waldo_35.png,Salient_stage 3,0,137,387,516
+waldo_36.png,Waldo,614,399,73,45
+waldo_36.png,Salient_stone wall,15,4,644,451
+waldo_36.png,Salient_table,889,490,578,251
+waldo_37.png,Waldo,520,254,73,46
+waldo_37.png,Salient_giants,445,343,1012,567
+waldo_37.png,Salient_giants legs,1095,5,297,128
+waldo_37.png,Salient_house,84,220,328,249
+waldo_38.png,Waldo,425,560,73,47
+waldo_39.png,Waldo,1361,523,73,47
+waldo_39.png,Salient_front of boat,0,56,230,405
+waldo_39.png,Salient_octopus,669,276,267,131
+waldo_40.png,Waldo,1195,816,73,47
+waldo_40.png,Salient_hat-house 2,1094,3,325,379
+waldo_40.png,Salient_house hat,685,559,377,351
+waldo_40.png,Salient_red roof house,643,14,427,430
+waldo_40.png,Salient_shoe house,27,5,428,416

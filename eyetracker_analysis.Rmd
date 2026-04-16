@@ -1,0 +1,1034 @@
+---
+title: "YET Zero Eye Tracking Data Analysis"
+author: "M Schmettow"
+date: "05/10/2022"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width = 8)
+knitr::opts_chunk$set(fig.height = 8)
+```
+
+```{r message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(printr)
+
+require(readxl)
+require(jpeg)
+require(ggimg)
+```
+
+## Input and preparation
+
+Yet Zero produces output in CSV format, containing meta data and measured coordinates. 
+Per session, one CSV file is created.
+During preparation we read in all CSV files, combine them into a single data frame, and add external meta data on stimuli and areas of interest (AOI).
+
+For this process, the following standard files and folders are used:
+
+1. A folder "Data/" containing all CSV files produced by Yet Zero
+1. A folder "Stimuli/" containing all stimulus images
+1. A file "Stimuli/Stimuli.csv" containing meta data on the stimuli
+1. A file "Stimuli/AOI.csv" containing definitions of areas of interest (AOI) on the stimuli
+
+We begin with reading in in th stimulus data and how this can be put into static ggplot figures. 
+This is particularly useful for checking the AOI definitions visually. 
+
+### Reading Stimulus meta data
+
+The following function reads in the stimulus meta data from the specified CSV file, and adds the image paths and image data.
+The `col_types = col(...)` argument specifies the expected data types of each column in the CSV file. Always remember that CSV data is of type Character, including the numbers. `read_csv` often guesses the data type correctly, but there exist fringe cases, where this fails.
+
+
+```{r}
+col_types_Stim <- cols(
+  File = col_character(),
+  width = col_double(),
+  height = col_double()
+)
+
+read_stim <- function(
+  file = "Stimuli/Stimuli.csv", 
+  stim_dir = "Stimuli/"
+) {
+  
+  stimuli <- read_csv(file, col_types = col_types_Stim) %>%
+    
+    # Clean filenames 
+    mutate(
+      File = str_replace(File, ".jpg", ".png"), # remove hidden spaces 
+      Path = str_c(stim_dir, File),
+      Stim = File
+    ) 
+      
+  
+  return(stimuli)
+}
+
+Stimuli <- read_stim()
+
+```
+
+Here we use `read_stim` to create the Stimulus table. We do a little recoding, if needed. The file name acts as an *identifier* for the stimuli.
+
+```{r}
+Stimuli <- read_stim() %>% 
+  mutate(Stim = File)
+```
+
+### Making a stimulus grid
+
+A useful way to visualize eye tracking data is to use a grid of the stimuli (like a thumbnail sheet) and overlay the eye tracking data on top of it. This can take different forms, but the underlying grid is always the same. Here we create a re-usable ggplot object G_0 containing a grid of pictures.
+
+```{r plot_stimuli, fig.height = 8, fig.width = 8}
+
+#important for waldo_12 since it is a png but named as a jpg
+Stimuli <- Stimuli %>%
+  mutate(
+    File = str_replace(File, ".jpg", ".png"),
+    Path = str_replace(Path, ".jpg", ".png")
+  )
+
+library(ggimage)
+
+G_0 <- 
+  Stimuli %>% 
+  ggplot(aes(x = width/2, y = height/2)) +
+  facet_wrap(~Stim) +
+  ggimage::geom_image(aes(image = Path), size = 1)
+
+G_0
+
+```
+
+### Reading csv
+
+The following code contains two functions. The first function `read_yz_csv` reads in a single CSV file, removes duplicate rows (which can occur when the eye tracker loses track of the eye).
+The second function `read_yz_files` takes a *list* of file names and reads them, combines them into a single data frame, and adds stimulus meta data from the stimulus table created above. 
+
+** Notes **
+
+The `map_df()` function is a so called *iterator*. Iterators are called *super functions*, where one of the function arguments is a function itself. In R iterators are the default way to do an operation repeatedly over a data set.
+Now you know why tidy R never uses for loops, like in Python. And you know one reason why R is called a *functional programming language*!
+
+
+There is another famous piece of data science at work here. 
+Think about the problem of adding the Stimulus meta data to the eye tracking data. 
+Try to picture how you would do it manually: 
+
+1. Identify matching Stimulus ID in both tables
+2. Copy the meta data from the Stimulus table to the eye tracking data table
+3. Repeat for all rows in the eye tracking data table.
+
+This operation is called a *join* in Data Science. 
+A precondition for joins is that the table have matching identifiers to create the relationship.
+Here this is the `Stim` column.
+
+
+```{r read_data}
+csv_files <- dir(
+  path = "Data/",
+  pattern = "*.csv",
+  full.names = TRUE
+)
+
+read_yz_csv <- function(file){
+  read_csv(file, 
+           col_types = cols(
+             Part = col_character(), 
+             Stim = col_character(), 
+             time = col_double(), 
+             xF = col_double(), 
+             yF = col_double(), 
+             xF_pro = col_double(), 
+             yF_pro = col_double()
+           )) %>% 
+    
+    # clean Stim names (VERY IMPORTANT)
+    mutate(
+      Stim = str_trim(Stim)
+    ) %>%
+    
+    # remove duplicates (based on gaze position)
+    mutate(is_duplicate = xF == lag(xF) & yF == lag(yF)) %>% 
+    filter(!is_duplicate) %>% 
+    mutate(File = file) %>% 
+    
+    # rename to match rest of pipeline
+      rename(
+      x = xF,
+      y = yF,
+      x_pro = xF_pro,
+      y_pro = yF_pro
+    ) %>% 
+    select(Part, Stim, time, x, y, x_pro, y_pro)
+}
+
+read_yz_data <- function(files, stim_tab){
+  Data <- files %>% 
+    map_df(read_yz_csv) %>% 
+    
+    mutate(Obs  = row_number()) %>%
+    
+    mutate(Part = as.factor(as.integer(Part) - min(as.integer(Part)) + 1)) %>%
+    
+    group_by(Part) %>%
+    mutate(time = time - min(time)) %>%
+    ungroup() %>%
+    
+    left_join(stim_tab, by = "Stim") %>% 
+    
+     #check join success (debugging helper)
+    mutate(join_ok = !is.na(width)) %>%
+    
+    mutate(
+      y = height - y,   
+      y_pro = 1 - y_pro
+    )
+  
+  return(Data)
+}
+```
+
+Before we can use this function, we have to create a list of all Csv files we want to process.
+The shown default is to read all csv files from directory `Data`. 
+
+```{r reading_csv}
+csv_files <- dir(
+  path = "Data/",
+  pattern = "*.csv",
+  full.names = TRUE
+)
+
+# read and combine all data
+D_0 <- read_yz_data(csv_files, Stimuli)
+
+# keep only valid gaze points inside screen
+D_in <- D_0 %>% 
+  filter(
+    !is.na(x), !is.na(y),          # remove missing gaze points
+    between(x, 0, width),
+    between(y, 0, height)
+  )
+
+head(D_in)
+
+```
+
+# Last Session
+
+Before continue with AOI coding, we take a look at the data of the last participant only. This is useful to check right after an experiment.
+
+Here we also introduce some basic visualizations of raw data, or overlays to the grid of Stimuli. The following function extracts the data of the last participant only.
+
+
+```{r}
+get_last_part <- function(data){
+  
+  last_part_id <- max(as.numeric(as.character(data$Part)), na.rm = TRUE)
+  
+  last_part <- data %>%
+    filter(as.numeric(as.character(Part)) == last_part_id)
+  
+  return(last_part)
+}
+```
+
+
+Here we extend the stimulus grid G_0 with points of measurement. See how the `geom_point` function takes a `data` argument, which allows us to specify a different data frame than the one used for the base ggplot object G_0 (which is the table of stimuli).
+
+Note that the individual figures are being scaled by the eye tracking measures.
+
+```{r heatmap_last, fig.width=12, fig.height=10}
+G_0 +
+  geom_point(
+    data = get_last_part(D_in),   # use cleaned data
+    aes(x = x, y = y),
+    size = 1.5,
+    col = "red",
+    alpha = 0.3
+  )
+```
+ The following variation shows the path of the last participant, by connecting the points with lines.
+
+```{r pathmap_last, fig.width=12, fig.height=10}
+G_0 +
+  geom_point(
+    data = get_last_part(D_in),
+    aes(x = x, y = y),
+    size = 0.3,
+    alpha = 0.4
+  ) +
+  geom_line(
+    data = get_last_part(D_in),
+    aes(x = x, y = y, group = Part),
+    col = "red",
+    alpha = 0.7
+  )
+```
+
+Making an orderly scan path based on time for waldo_05 as an example
+
+```{r}
+library(tidyverse)
+library(ggimage)
+
+# Select participant and stimulus
+stim_name <- "waldo_05.png"
+part_id <- max(as.numeric(as.character(D_in$Part)))
+
+scan_data <- D_in %>%
+  filter(Part == part_id, Stim == stim_name) %>%
+  arrange(time) %>%
+  mutate(order = row_number())
+
+# Get stimulus dimensions
+stim_info <- Stimuli %>%
+  filter(Stim == stim_name)
+
+# Create the scan path plot
+ggplot() +
+  # Display the stimulus image
+  ggimage::geom_image(
+    data = stim_info,
+    aes(x = width / 2, y = height / 2, image = Path),
+    size = 1
+  ) +
+  
+  # Draw scan path lines
+  geom_path(
+    data = scan_data,
+    aes(x = x, y = y),
+    color = "red",
+    linewidth = 1.2,
+    alpha = 0.8
+  ) +
+  
+  # Draw gaze points colored by fixation order
+  geom_point(
+    data = scan_data,
+    aes(x = x, y = y, color = order),
+    size = 3
+  ) +
+  
+  # Optional: label the first few fixations
+  geom_text(
+    data = scan_data %>% filter(order <= 10),
+    aes(x = x, y = y, label = order),
+    color = "black",
+    size = 3,
+    vjust = -1
+  ) +
+  
+  # Use a perceptually uniform color scale
+  scale_color_viridis_c(option = "plasma") +
+  
+  # Constrain the plot to the stimulus dimensions
+  coord_fixed(
+    xlim = c(0, stim_info$width),
+    ylim = c(0, stim_info$height),
+    expand = FALSE,
+    clip = "on"
+  ) +
+  
+  labs(
+    title = paste("Scan Path for", stim_name),
+    subtitle = "Gaze points colored by fixation order",
+    x = "X position (pixels)",
+    y = "Y position (pixels)",
+    color = "Fixation\nOrder"
+  ) +
+  
+  theme_minimal() +
+  theme(
+    plot.margin = margin(0, 0, 0, 0)
+  )
+
+```
+
+
+
+Here, we use a code to color by fixation order. By default, ggplot uses a continuous color scale,meaning that low values are represented by yellow and high values are represented by dark blue. The plot showcases the start of the search (dark blue), the middle of the search (green), and the end of the search (yellow). 
+
+
+```{r fixationorder_last, fig.width=12, fig.height=10}
+# Determine the actual presentation order for each participant
+stim_order <- D_in %>%
+  group_by(Part, Stim) %>%
+  summarise(first_time = min(time), .groups = "drop") %>%
+  arrange(Part, first_time) %>%
+  group_by(Part) %>%
+  mutate(trial_order = row_number()) %>%
+  ungroup()
+
+# Join the presentation order with the stimulus metadata
+Stimuli_ordered <- Stimuli %>%
+  left_join(stim_order %>% select(Part, Stim, trial_order),
+            by = "Stim")
+
+# Get presentation order for the last participant
+last_part <- max(as.numeric(as.character(D_in$Part)))
+
+stim_levels <- stim_order %>%
+  filter(Part == last_part) %>%
+  arrange(trial_order) %>%
+  pull(Stim)
+
+# Apply ordered factor to the data used in the plot
+plot_data <- get_last_part(D_in) %>%
+  mutate(Stim = factor(Stim, levels = stim_levels)) %>%
+  arrange(Stim, time) %>%
+  group_by(Stim) %>%
+  mutate(order = row_number()) %>%
+  ungroup()
+
+Stimuli_plot <- Stimuli %>%
+  mutate(Stim = factor(Stim, levels = stim_levels))
+
+# Create the ordered fixation plot
+G_ordered <- 
+  Stimuli_plot %>%
+  ggplot(aes(x = width / 2, y = height / 2)) +
+  facet_wrap(~Stim) +
+  ggimage::geom_image(aes(image = Path), size = 1)
+
+G_ordered +
+  geom_point(
+    data = plot_data,
+    aes(x = x, y = y, col = order),
+    size = 1.5,
+    alpha = 0.6
+  ) +
+  scale_color_viridis_c(name = "Fixation Order") +
+  labs(title = "Fixation Order in Actual Stimulus Presentation Sequence")
+
+```
+
+Additional plot to show how search develops over time, each color represents 1/3 of the search time, showing beginning, middle, and end of the search represented by colors 
+
+```{r search_behavior, fig.width=12, fig.height=10}
+D_in %>%
+  group_by(Part, Stim) %>%
+  arrange(time) %>%
+  mutate(
+    phase = case_when(
+      row_number() < n()/3 ~ "early",
+      row_number() < 2*n()/3 ~ "middle",
+      TRUE ~ "late"
+    )
+  ) %>%
+  ggplot(aes(x = x, y = y, col = phase)) +
+  geom_point(alpha = 0.5) +
+  facet_wrap(~Stim)
+```
+
+msking the plot again but specifically for waldo_05
+
+```{r}
+stim_select <- "waldo_05.png"
+
+# base plot with only one stimulus
+G_single <- 
+  Stimuli %>% 
+  filter(Stim == stim_select) %>% 
+  ggplot(aes(x = width/2, y = height/2)) +
+  ggimage::geom_image(aes(image = Path), size = 1)
+
+# add your phase-colored gaze points
+G_single +
+  geom_point(
+    data = D_in %>%
+      group_by(Part, Stim) %>%
+      arrange(time) %>%
+      mutate(
+        phase = case_when(
+          row_number() < n()/3 ~ "early",
+          row_number() < 2*n()/3 ~ "middle",
+          TRUE ~ "late"
+        )
+      ) %>%
+      ungroup() %>%
+      filter(Stim == stim_select),
+    
+    aes(x = x, y = y, col = phase),
+    size = 7.5,      # make points visible
+    alpha = 2.0
+  )
+```
+
+The following code creates a density plot, it groups gaze points into small squares (bins) across the image instead of showing every single gaze point. It shows exactly how many gaze points fall into each area without creating overlap. light squares mean few or no gaze points, dark squares mean many gaze points. 
+
+```{r densityplot_last, fig.width=12, fig.height=10}
+#density plot
+G_0 +
+  geom_bin2d(
+    data = D_in,
+    aes(x = x, y = y),
+    bins = 40
+  ) +
+  facet_wrap(~Stim)
+```
+
+## Deriving measures
+
+Often, it is relevant to know where someone is looking at, but not always. Here we derive a simple measure, the total distance their eyes travelled during stimulus presentation.
+
+```{r}
+add_travel <- function(data) {
+  mutate(data,
+         travel = sqrt((x - lag(x))^2 + (y - lag(y))^2))
+}
+
+D_1 <- D_in %>%   # use cleaned data
+  mutate(Sequence = paste(Part, Stim, sep = "_")) %>% 
+  
+  group_by(Sequence) %>% 
+  arrange(time) %>%   
+  
+  add_travel() %>% 
+  
+  ungroup() %>% 
+  
+  select(Obs, Part, Stim, Sequence, time, x, y, travel)
+```
+
+```{r plot_travel}
+
+D_1 %>% 
+  group_by(Stim) %>% 
+  summarise(mean_travel = mean(travel, na.rm = TRUE)) %>% 
+  
+  ggplot(aes(x = as.numeric(as.factor(Stim)), y = mean_travel)) +
+  geom_line() +
+  labs(x = "Stimulus order", y = "Mean eye movement distance")
+
+```
+
+#Performance measures without AOIs
+
+Reaction time   
+
+```{r}
+D_perf <- D_in %>%
+  group_by(Part, Stim) %>%
+  
+  summarise(
+    rt = max(time) - min(time),
+    start_time = min(time),   # capture when trial started
+    .groups = "drop"
+  ) %>%
+  
+  mutate(
+    rt = pmin(rt, 45),
+    accuracy = if_else(rt < 45, 1, 0)
+  ) %>%
+  
+  arrange(Part, start_time) %>%   # TRUE order!
+  
+  group_by(Part) %>%
+  mutate(trial = row_number()) %>%
+  ungroup()
+
+```
+
+
+```{r}
+
+ggplot(D_perf, aes(x = trial)) +
+  
+  # background bars = accuracy
+  geom_col(aes(y = accuracy * 45),
+           fill = "grey80",
+           alpha = 0.5) +
+  
+  # individual participant lines
+  geom_line(aes(y = rt, group = Part), color = "black", alpha = 0.4) +
+  geom_point(aes(y = rt), color = "black", alpha = 0.6) +
+  
+  # highlight DNF trials
+  geom_point(
+    data = D_perf %>% filter(rt == 45),
+    aes(y = rt),
+    color = "red",
+    size = 3
+  ) +
+  
+  # cutoff line
+  geom_hline(yintercept = 45, linetype = "dashed", color = "red") +
+  
+  # TREND LINE (mean trend across all participants)
+  geom_smooth(
+    aes(y = rt),
+    method = "loess",   # smooth curve (nice for behavior)
+    se = FALSE,
+    color = "blue",
+    size = 1.2
+  ) +
+  
+  labs(
+    title = "Performance Over Trials",
+    subtitle = "Reaction Time with Learning/Fatigue Trend",
+    x = "Trial",
+    y = "Reaction Time (seconds)"
+  )
+```
+
+Reaction time combined with Accuracy 
+
+```{r}
+library(tidyverse)
+
+# Read the accuracy data
+accuracy <- read_csv("accuracy.csv")
+
+# Rename columns for easier handling
+accuracy <- accuracy %>%
+  rename(
+    trial = `trial-index`,
+    Stim = stimulus,
+    Accuracy = clicked_in_waldo,
+    rt = time
+  )
+
+# If the dataset contains only one participant, create a participant ID
+accuracy <- accuracy %>%
+  mutate(Part = 1)
+
+# Ensure the data is ordered according to the actual presentation sequence
+accuracy <- accuracy %>%
+  arrange(Part, trial)
+```
+
+```{r}
+ggplot(accuracy, aes(x = trial)) +
+  
+  # Background bars representing accuracy (scaled to RT axis)
+  geom_col(
+    aes(y = if_else(Accuracy == 1, 45, 0)),
+    fill = "grey80",
+    alpha = 0.5
+  ) +
+  
+  # Reaction time line
+  geom_line(aes(y = rt, group = Part), color = "black", linewidth = 1) +
+  geom_point(aes(y = rt), color = "black", size = 2) +
+  
+  # Highlight DNF trials (timeouts)
+  geom_point(
+    data = accuracy %>% filter(Accuracy == -1),
+    aes(y = rt),
+    color = "red",
+    size = 3
+  ) +
+  
+  # Highlight incorrect clicks
+  geom_point(
+    data = accuracy %>% filter(Accuracy == 0),
+    aes(y = rt),
+    color = "orange",
+    size = 3
+  ) +
+  
+  # 45-second cutoff line
+  geom_hline(yintercept = 45, linetype = "dashed", color = "red") +
+  
+  # Trend line (learning/fatigue)
+  geom_smooth(
+    aes(y = rt),
+    method = "loess",
+    se = TRUE,
+    color = "blue",
+    linewidth = 1.2
+  ) +
+  
+  labs(
+    title = "Performance Across Trials",
+    subtitle = "Reaction Time and Accuracy in the Waldo Task",
+    x = "Trial (Presentation Order)",
+    y = "Reaction Time (seconds)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+accuracy_summary <- accuracy %>%
+  group_by(trial, Accuracy) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(trial) %>%
+  mutate(prop = n / sum(n))
+
+ggplot(accuracy_summary, aes(x = trial, y = prop, fill = factor(Accuracy))) +
+  geom_area(position = "stack", alpha = 0.8) +
+  scale_fill_manual(
+    values = c("-1" = "red", "0" = "orange", "1" = "darkgreen"),
+    labels = c("-1" = "DNF", "0" = "Incorrect", "1" = "Correct"),
+    name = "Outcome"
+  ) +
+  labs(
+    title = "Proportion of Trial Outcomes Over Time",
+    x = "Trial (Presentation Order)",
+    y = "Proportion"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(accuracy, aes(x = reorder(Stim, rt, median), y = rt, fill = factor(Accuracy))) +
+  geom_boxplot(alpha = 0.8) +
+  scale_fill_manual(
+    values = c("-1" = "red", "0" = "orange", "1" = "darkgreen"),
+    labels = c("-1" = "DNF", "0" = "Incorrect", "1" = "Correct"),
+    name = "Outcome"
+  ) +
+  coord_flip() +
+  labs(
+    title = "Reaction Time by Stimulus",
+    x = "Stimulus",
+    y = "Reaction Time (seconds)"
+  ) +
+  theme_minimal()
+```
+
+THE AOI PLOTS WERE NOT USED IN R DUE TO NAMING/FORMATTING ISSUES
+-> the analysis continued in thonny
+
+# Areas of interest
+
+The main use case for eye tracking is to measure how often or how long, or in which sequence, people look at certain areas of interest (AOI) on the stimulus. What these areas are differs from case to case, here it is the main areas of faces: eyes, mouth and nose.
+
+AOIs are defined as rectangles on the stimulus images. The following function reads in the AOI definitions from a CSV file, and merges them with the stimulus meta data to create absolute coordinates for each AOI on each stimulus.
+
+
+## Reading AOI
+
+The function defined here makes againn use of a join operation, 
+which merges the stimulus meta data with the AOI rectangle definitions. 
+Different to the previous join, the linking iodentifier is not the Stimulus ID, but the face. This is a difference, as in this experiment, the same face appeared in two conditions regarding the sclera color. This is also the reason why the join is many-to-many.
+
+```{r}
+read_yz_aoi <- function(file = "Stimuli/AOI.csv",
+                        col_types = cols(
+                          Stimulus = col_character(),
+                          AOI = col_character(),
+                          x = col_double(),
+                          y = col_double(),
+                          w = col_double(),
+                          h = col_double()
+                        ),
+                        stim_tab) {
+  
+  AOI <- read_csv(file, col_types = col_types) %>% 
+    
+    
+    
+    # rename columns
+    rename(
+      Stim = Stimulus,  
+      x_aoi = x,
+      y_aoi = y,
+      w_aoi = w,
+      h_aoi = h
+    ) %>% 
+    
+    # normalize stimulus names (remove extensions everywhere)
+    mutate(
+      Stim = str_remove(Stim, "\\.(jpg|png)$")
+    )
+  
+  Stim_clean <- stim_tab %>% 
+    mutate(
+      Stim = str_remove(Stim, "\\.(jpg|png)$")
+    )
+  
+  # join with stimulus metadata
+  AOI <- AOI %>%
+    left_join(Stim_clean, by = "Stim") %>% 
+    
+    # compute AOI boundaries (important for correct plotting!)
+    mutate(
+      join_ok = !is.na(width),
+      
+      xmin = x_aoi,
+      xmax = x_aoi + w_aoi,
+      
+      ymax = height - y_aoi,
+      ymin = ymax - h_aoi
+    ) %>% 
+    
+    arrange(Stim, AOI)
+  
+# debugging 
+  
+if(any(!AOI$join_ok)) {
+    warning("⚠️ Some AOIs did not match stimuli!")
+    print(unique(AOI$Stim[!AOI$join_ok]))
+  }
+  
+  return(AOI)
+}
+```
+
+
+```{r reading_aoi}
+AOI <- read_yz_aoi(stim_tab = Stimuli)
+
+unique(AOI$Stim)
+unique(Stimuli$Stim)
+
+```
+
+## AOI preview
+
+Like we did before with the stimulus images, we can now create a ggplot object that shows the AOI rectangles on top of the stimulus images. This is very useful for checking if the AOI definitions are correct.
+
+```{r}
+
+G_1 <- 
+  AOI %>% 
+  ggplot(aes(x = width/2, y = height/2)) +
+  
+  facet_wrap(~Stim) +
+  
+  ggimage::geom_image(aes(image = Path), size = 1) +
+  
+  geom_rect(
+    aes(xmin = xmin, ymin = ymin, 
+        xmax = xmax, ymax = ymax,
+        fill = AOI),
+    alpha = .2,
+    inherit.aes = FALSE
+  )
+
+G_1
+```
+
+#### AOI Classification
+
+We have the AOI definitions, now we can classify each eye tracking observation according to the AOI it falls into. For this purpose, we do a many-to-many join between the eye tracking data and the AOI definitions.
+
+But this is just an intermediate step. Next, we filter only those rows, where the measure falls into the AOI. As long as the AOIs are non-overlapping, there can only be one (or zero) match. Then we check for each observation if it falls into the rectangle defined by the AOI. If so, we keep that observation-AOI combination. Finally, we right-join this result with the original eye tracking data to keep all observations, and assign "Outside" to those observations that did not fall into any AOI.
+
+
+```{r}
+D_2 <- 
+  D_in %>% 
+  
+  #join by stimulus
+  left_join(AOI, by = "Stim", relationship = "many-to-many") %>% 
+  
+  # check if gaze point is inside AOI
+  mutate(is_in = x > xmin & x < xmax & y > ymin & y < ymax) %>% 
+  
+  filter(is_in) %>% 
+  
+  select(Obs, AOI) %>% 
+  
+  # keep all observations
+  right_join(D_1, by = "Obs") %>% 
+  
+  # keep screen boundaries
+  left_join(D_in %>% distinct(Obs, width, height), by = "Obs") %>% 
+  
+  filter(between(x, 0, width), between(y, 0, height)) %>% 
+  
+  # label outside points
+  mutate(AOI = if_else(is.na(AOI), "Outside", AOI)) %>% 
+  
+  arrange(Part, Stim, time)
+```
+
+
+```{r fig.width=12, fig.height=10}
+# AOI counts per stimulus 
+
+D_2 %>% 
+  group_by(Stim, AOI) %>% 
+  summarize(n = n(), .groups = "drop") %>% 
+  
+  ggplot(aes(x = AOI, y = n, fill = AOI)) +
+  geom_col() +
+  facet_wrap(~Stim)
+
+```
+
+```{r plot_aoi_counts, fig.width=12, fig.height=10}
+G_0 +
+  geom_count(
+    aes(x = x, y = y, col = AOI),
+    alpha = .5,
+    inherit.aes  = FALSE,
+    data = D_2
+  )
+```
+### Performance measures with AOIs
+
+possible codes to measure performance in terms of RT and accuracy based on the AOIs (waldo AOIs have to be added to the csv)
+
+```{r}
+#reaction time finding waldo
+
+RT <- D_2 %>% 
+filter(AOI == "Waldo") %>% 
+group_by(Part, Stim) %>% 
+summarize(
+   RT = min(time),
+    .groups = "drop"
+)
+```
+
+```{r}
+#accuracy 
+
+RT <- D_2 %>% 
+filter(AOI == "Waldo") %>% 
+group_by(Part, Stim) %>% 
+summarize(
+RT = min(time),
+  .groups = "drop"
+  )
+```
+
+### Refixations (fatigue)
+
+```{r}
+D_2 %>% 
+  group_by(Part, Stim, AOI) %>% 
+  summarize(n_fix = n()) %>% 
+  filter(AOI == "Waldo")
+```
+
+### Measuring visits
+
+A *visit* is a closed sequence of eye positions in the same region. The following code uses a combined criterion for setting a new visits:
+
+-   the position falls into a different AOI
+
+-   OR: the travel traveled from the previous position exceeds a certain threshold
+
+```{r}
+travel_threshold <- 50
+
+D_3 <-
+  D_2 %>%
+  group_by(Part, Stim) %>%
+  arrange(time) %>% 
+  
+  mutate(
+    new_visit = AOI != lag(AOI) | travel > travel_threshold,
+    
+    # first row should always start a visit
+    new_visit = if_else(is.na(new_visit), TRUE, new_visit),
+    
+    visit = cumsum(new_visit),
+    
+    duration = lead(time) - time
+  ) %>%
+  
+  ungroup()
+
+```
+
+#### Plotting visit paths and duration
+
+```{r }
+
+Visit_summary <- D_3 %>%
+  group_by(Part, Stim, visit, AOI) %>%
+  summarize(
+    x = mean(x),
+    y = mean(y),
+    duration = sum(duration, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+```
+
+```{r fig.width=8, fig.height = 8}
+# plot 1 visit duration (fatigue & attention)
+G_3 <- 
+  G_0 +
+  geom_point(
+    data = Visit_summary %>% filter(AOI != "Outside"),
+    aes(x = x, y = y, size = duration, col = AOI),
+    alpha = 0.7,
+    inherit.aes = FALSE
+  )
+
+G_3
+```
+
+```{r fig.width=8, fig.height = 8}
+# plot 2 search paths 
+library(grid)  # for arrows
+
+G_4 <- 
+  G_0 +
+  geom_path(
+    data = Visit_summary %>% filter(AOI != "Outside"),
+    aes(x = x, y = y, group = interaction(Part, Stim), col = AOI),
+    arrow = arrow(length = unit(0.2, "cm")),
+    alpha = 0.8,
+    inherit.aes = FALSE
+  ) +
+  geom_text(
+    data = Visit_summary %>% filter(AOI != "Outside"),
+    aes(x = x, y = y, label = visit),
+    size = 3,
+    inherit.aes = FALSE
+  )
+
+G_4
+
+```
+
+## Participant-level analysis
+
+### Frequencies and durations
+
+```{r}
+
+D_4 <-
+  D_3 %>%
+  group_by(Part, face, AOI, Sunglasses) %>%  # <--
+  summarize(n_visits = n(),
+            total_dur = sum(duration, na.rm = TRUE)) %>%
+  ungroup() #%>% 
+#  mutate(congruent = (Sclera == Skull))
+
+
+D_4
+
+```
+
+```{r}
+
+#G_6 <-
+#
+#  D_4 %>%
+#  ggplot(aes(x = congruent, y = n_visits, fill = AOI)) +
+#  facet_wrap(~Part) +
+#  geom_col()
+#
+#G_6
+#
+```
+
+
+```{r}
+
+#G_7 <-
+#  D_4 %>%
+#  ggplot(aes(x = AOI, y = total_dur, fill = congruent)) +
+#  facet_wrap(~Part) +
+#  geom_col()
+#
+#G_7
+
+```
+
+
